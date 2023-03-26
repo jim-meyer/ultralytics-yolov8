@@ -15,18 +15,18 @@ Usage - sources:
                                                   'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
 
 Usage - formats:
-    $ yolo task=... mode=predict --weights yolov8n.pt          # PyTorch
-                                    yolov8n.torchscript        # TorchScript
-                                    yolov8n.onnx               # ONNX Runtime or OpenCV DNN with --dnn
-                                    yolov8n_openvino_model     # OpenVINO
-                                    yolov8n.engine             # TensorRT
-                                    yolov8n.mlmodel            # CoreML (macOS-only)
-                                    yolov8n_saved_model        # TensorFlow SavedModel
-                                    yolov8n.pb                 # TensorFlow GraphDef
-                                    yolov8n.tflite             # TensorFlow Lite
-                                    yolov8n_edgetpu.tflite     # TensorFlow Edge TPU
-                                    yolov8n_paddle_model       # PaddlePaddle
-    """
+    $ yolo mode=predict model=yolov8n.pt                 # PyTorch
+                              yolov8n.torchscript        # TorchScript
+                              yolov8n.onnx               # ONNX Runtime or OpenCV DNN with dnn=True
+                              yolov8n_openvino_model     # OpenVINO
+                              yolov8n.engine             # TensorRT
+                              yolov8n.mlmodel            # CoreML (macOS-only)
+                              yolov8n_saved_model        # TensorFlow SavedModel
+                              yolov8n.pb                 # TensorFlow GraphDef
+                              yolov8n.tflite             # TensorFlow Lite
+                              yolov8n_edgetpu.tflite     # TensorFlow Edge TPU
+                              yolov8n_paddle_model       # PaddlePaddle
+"""
 import os
 import platform
 from collections import defaultdict
