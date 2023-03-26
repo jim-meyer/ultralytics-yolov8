@@ -15,18 +15,19 @@ Usage - sources:
                                                   'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
 
 Usage - formats:
-    $ yolo mode=predict model=yolov8n.pt                 # PyTorch
-                              yolov8n.torchscript        # TorchScript
-                              yolov8n.onnx               # ONNX Runtime or OpenCV DNN with dnn=True
-                              yolov8n_openvino_model     # OpenVINO
-                              yolov8n.engine             # TensorRT
-                              yolov8n.mlmodel            # CoreML (macOS-only)
-                              yolov8n_saved_model        # TensorFlow SavedModel
-                              yolov8n.pb                 # TensorFlow GraphDef
-                              yolov8n.tflite             # TensorFlow Lite
-                              yolov8n_edgetpu.tflite     # TensorFlow Edge TPU
-                              yolov8n_paddle_model       # PaddlePaddle
-"""
+    $ yolo task=... mode=predict --weights yolov8n.pt          # PyTorch
+                                    yolov8n.torchscript        # TorchScript
+                                    yolov8n.onnx               # ONNX Runtime or OpenCV DNN with --dnn
+                                    yolov8n_openvino_model     # OpenVINO
+                                    yolov8n.engine             # TensorRT
+                                    yolov8n.mlmodel            # CoreML (macOS-only)
+                                    yolov8n_saved_model        # TensorFlow SavedModel
+                                    yolov8n.pb                 # TensorFlow GraphDef
+                                    yolov8n.tflite             # TensorFlow Lite
+                                    yolov8n_edgetpu.tflite     # TensorFlow Edge TPU
+                                    yolov8n_paddle_model       # PaddlePaddle
+    """
+import os
 import platform
 from collections import defaultdict
 from pathlib import Path
@@ -73,8 +74,17 @@ class BasePredictor:
         """
         self.args = get_cfg(cfg, overrides)
         project = self.args.project or Path(SETTINGS['runs_dir']) / self.args.task
-        name = self.args.name or f'{self.args.mode}'
-        self.save_dir = increment_path(Path(project) / name, exist_ok=self.args.exist_ok)
+        name = self.args.name or f"{self.args.mode}"
+        # JIMM BEGIN
+        self.save_dir = Path(project) / name
+        os.makedirs(self.save_dir, exist_ok=self.args.exist_ok)
+        # self.save_dir = increment_path(Path(project) / name, exist_ok=self.args.exist_ok)
+        # JIMM END
+        if self.args.save:
+            # JIMM BEGIN
+            (self.save_dir if self.args.save_txt else self.save_dir).mkdir(parents=True, exist_ok=True)
+            # (self.save_dir / 'labels' if self.args.save_txt else self.save_dir).mkdir(parents=True, exist_ok=True)
+            # JIMM END
         if self.args.conf is None:
             self.args.conf = 0.25  # default conf=0.25
         self.done_warmup = False
@@ -195,8 +205,10 @@ class BasePredictor:
                 if self.args.show:
                     self.show(p)
 
-                if self.args.save:
-                    self.save_preds(vid_cap, i, str(self.save_dir / p.name))
+                # JIMM BEGIN
+                # if self.args.save:
+                #     self.save_preds(vid_cap, i, str(self.save_dir / p.name))
+                # JIMM END
             self.run_callbacks('on_predict_batch_end')
             yield from self.results
 

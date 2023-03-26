@@ -1,4 +1,6 @@
 # Ultralytics YOLO 🚀, GPL-3.0 license
+import os
+from pathlib import Path
 
 import torch
 
@@ -50,7 +52,13 @@ class DetectionPredictor(BasePredictor):
         else:
             frame = getattr(self.dataset, 'frame', 0)
         self.data_path = p
-        self.txt_path = str(self.save_dir / 'labels' / p.stem) + ('' if self.dataset.mode == 'image' else f'_{frame}')
+        # save_path = str(self.save_dir / p.name)  # im.jpg
+        # JIMM BEGIN
+        source_base_dir = os.sep.join([d for d in self.args.source.split(os.sep) if '*' not in d])
+        rel_path = os.path.relpath(p, source_base_dir)
+        self.txt_path = str(Path(os.path.join(self.save_dir, os.path.dirname(rel_path))) / p.stem) + ('' if self.dataset.mode == 'image' else f'_{frame}')
+        # self.txt_path = str(self.save_dir / 'labels' / p.stem) + ('' if self.dataset.mode == 'image' else f'_{frame}')
+        # JIMM END
         log_string += '%gx%g ' % im.shape[2:]  # print string
         self.annotator = self.get_annotator(im0)
 
@@ -66,8 +74,8 @@ class DetectionPredictor(BasePredictor):
             c, conf, id = int(d.cls), float(d.conf), None if d.id is None else int(d.id.item())
             if self.args.save_txt:  # Write to file
                 line = (c, *d.xywhn.view(-1)) + (conf, ) * self.args.save_conf + (() if id is None else (id, ))
-                with open(f'{self.txt_path}.txt', 'a') as f:
-                    f.write(('%g ' * len(line)).rstrip() % line + '\n')
+                # with open(f'{self.txt_path}.txt', 'a') as f:
+                #     f.write(('%g ' * len(line)).rstrip() % line + '\n')
             if self.args.save or self.args.show:  # Add bbox to image
                 name = ('' if id is None else f'id:{id} ') + self.model.names[c]
                 label = None if self.args.hide_labels else (name if self.args.hide_conf else f'{name} {conf:.2f}')
@@ -78,6 +86,12 @@ class DetectionPredictor(BasePredictor):
                              file=self.save_dir / 'crops' / self.model.names[c] / f'{self.data_path.stem}.jpg',
                              BGR=True)
 
+        # JIMM BEGIN
+        if txt_lines:
+            os.makedirs(os.path.dirname(self.txt_path), exist_ok=True)
+            with open(f'{self.txt_path}.txt', 'w') as f:
+                f.writelines(txt_lines)
+        # JIMM END
         return log_string
 
 
