@@ -22,6 +22,12 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
+try:
+    import mlflow
+    MLFLOW_IMPORTED = True
+except ImportError:
+    MLFLOW_IMPORTED = False
+
 from ultralytics.nn.tasks import attempt_load_one_weight, attempt_load_weights
 from ultralytics.yolo.cfg import get_cfg
 from ultralytics.yolo.data.utils import check_cls_dataset, check_det_dataset
@@ -276,6 +282,11 @@ class BaseTrainer:
         if self.args.close_mosaic:
             base_idx = (self.epochs - self.args.close_mosaic) * nb
             self.plot_idx.extend([base_idx, base_idx + 1, base_idx + 2])
+
+        if MLFLOW_IMPORTED:
+            mlf_run = mlflow.start_run(run_name=f'{evaluated_entity_name}-{evaluated_entity_platform}-{predictor_cpu}-{evaluated_entity_version}')
+            mlflow.log_params({'dataset_name': dataset_name, 'evaluation_type': evaluation_type})
+
         for epoch in range(self.start_epoch, self.epochs):
             self.epoch = epoch
             self.run_callbacks('on_train_epoch_start')

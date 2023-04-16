@@ -173,6 +173,9 @@ class LoadScreenshots:
 class LoadImages:
     # YOLOv8 image/video dataloader, i.e. `yolo predict source=image.jpg/vid.mp4`
     def __init__(self, path, imgsz=640, stride=32, auto=True, transforms=None, vid_stride=1):
+        # JIMM BEGIN
+        self.base_path = os.sep.join([d for d in path.split(os.sep) if '*' not in d])
+        # JIMM END
         if isinstance(path, str) and Path(path).suffix == '.txt':  # *.txt file with img/vid/dir on each line
             path = Path(path).read_text().rsplit()
         files = []
