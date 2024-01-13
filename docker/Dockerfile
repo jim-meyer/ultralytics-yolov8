@@ -25,11 +25,16 @@ WORKDIR /usr/src/ultralytics
 
 # Copy contents
 # COPY . /usr/src/app  (issues as not a .git directory)
-RUN git clone https://github.com/ultralytics/ultralytics /usr/src/ultralytics
+RUN git clone -b main-jimm --single-branch https://github.com/jim-meyer/ultralytics-yolov8.git /usr/src/ultralytics
 
 # Install pip packages
-RUN python3 -m pip install --upgrade pip wheel
-RUN pip install --no-cache '.[export]' albumentations comet gsutil notebook
+# JIMM: BEGIN:
+RUN python3 -m venv ~/envs/yolov8
+# JIMM: END:
+RUN /bin/bash -c "source ~/envs/yolov8/bin/activate && python3 -m pip install --upgrade pip wheel"
+RUN /bin/bash -c "source ~/envs/yolov8/bin/activate && pip install --no-cache '.[export]' albumentations gsutil notebook \
+        --extra-index-url https://download.pytorch.org/whl/cpu"
+RUN /bin/bash -c "source ~/envs/yolov8/bin/activate && pip uninstall -y torch torchvision && pip install torch==2.1.2+cu118 torchvision==0.16.2+cu118 --no-cache -f https://download.pytorch.org/whl/cu118/torch_stable.html"
 
 # Set environment variables
 ENV OMP_NUM_THREADS=1
